@@ -2,7 +2,6 @@ package mancala.domain;
 
 public class Player {
 
-    public Player Player;
     public Player opponent;
     public boolean isTurn;
     public String name;

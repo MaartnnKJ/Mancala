@@ -5,22 +5,23 @@ public class Pit {
     private int index;
     protected Pit nextPit;
     protected int contents;
-    protected Player owner;
+    public Player owner;
     public String winner;
 
     public Pit() {
         this.owner = new Player();
+        this.index = 0;
         this.contents = 4;
-        this.index = 1;
         this.nextPit = new Pit(4, ++index, this, this.owner);
     }
 
     public Pit(int contents, int index, Pit firstPit, Player player) {
         iOwnThis(index, player);
-        if (index == 13 || index == 6) {
+        this.index = index;
+        if (index == 12 || index == 5) {
             this.contents = contents;
             this.nextPit = new Kalaha(0, ++index, firstPit, player);
-        } else if (index < 13) {
+        } else if (index < 12) {
             this.contents = contents;
             this.nextPit = new Pit(4, ++index, firstPit, player);
         } else {
@@ -29,7 +30,7 @@ public class Pit {
     }
 
     public void iOwnThis(int index, Player player) {
-        if (index < 8) {
+        if (index < 7) {
             this.owner = player;
         } else {
             this.owner = player.getOpponent();
@@ -42,9 +43,11 @@ public class Pit {
 
     public Pit getNextPit(int pitAway) {
         if (pitAway == 1) {
-            return nextPit;
+            return this.nextPit;
+        } else if (pitAway == 0) {
+            return this;
         } else {
-            return nextPit.getNextPit(pitAway - 1);
+            return this.nextPit.getNextPit(pitAway - 1);
         }
     }
 
@@ -68,13 +71,13 @@ public class Pit {
         return contentToPlay;
     }
 
-
     public void addContent(int contentToPlay) {
         contentToPlay = contentToPlay - 1;
         this.contents = this.contents + 1;
         if (contentToPlay > 0) {
             this.nextPit.addContent(contentToPlay);
-        } else {
+        } else if (contentToPlay == 0 ) {
+            contentToSteal();
             this.owner.switchMyTurn();
         }
     }
@@ -87,18 +90,18 @@ public class Pit {
         }
     }
 
-    public void contentToSteal(Player player) {
+    public void contentToSteal() {
         int contentToSteal = 0;
-        if (getContents() == 1 && this.owner == player && getOppositePit().getContents() != 0) {
+        if (getContents() == 1 && this.owner.isTurn && getOppositePit().getContents() != 0) {
             contentToSteal = getOppositePit().getContents() + 1;
             getOppositePit().setContents(0);
             setContents(0);
         }
-        addStolenContent(contentToSteal, player);
+        addStolenContent(contentToSteal);
     }
 
-    public void addStolenContent(int contentToSteal, Player player) {
-        this.nextPit.addStolenContent(contentToSteal, player);
+    public void addStolenContent(int contentToSteal) {
+        this.nextPit.addStolenContent(contentToSteal);
     }
 
     public boolean isStealAllowed(int contentToPlay) {
@@ -128,15 +131,15 @@ public class Pit {
     }
 
     public int scoreP1() {
-        int ScoreP1 = 0;
+        int ScoreP1 = getKalaha().getContents();
         for (int n = 1; n < 6; n++) {
-            ScoreP1 += getKalaha().getNextPit(n + 7).getContents();
+            ScoreP1 += getKalaha().getNextPit(n+7).getContents();
         }
         return ScoreP1;
     }
 
     public int scoreP2() {
-        int ScoreP2 = 0;
+        int ScoreP2 = getKalaha().getNextPit(7).getContents();
         for (int n = 1; n < 6; n++) {
             ScoreP2 += getKalaha().getNextPit(n).getContents();
         }
@@ -152,21 +155,17 @@ public class Pit {
     }
 
     public boolean gameOver2() {
-        boolean gameOver2 = false;
+        boolean gameOver2;
         int ContentsSideP2 = 0;
         int ContentsSideP1 = 0;
 
-        for (int m = 1; m < 6; m++) {
+        for (int m = 1; m < 7; m++) {
             ContentsSideP2 += getKalaha().getNextPit(m).getContents();
             ContentsSideP1 += getKalaha().getNextPit(m + 7).getContents();
         }
-        if (ContentsSideP2 == 0) {
+        if (ContentsSideP2 == 0 || ContentsSideP1 == 0) {
             gameOver2 = true;
-        } else if (ContentsSideP1 == 0) {
-            gameOver2 = true;
-        } else {
-            gameOver2 = false;
-        }
+        } else gameOver2 = false;
         return gameOver2;
     }
 
@@ -175,7 +174,7 @@ public class Pit {
     }
 
     public Pit getOppositePit() {
-        return this.getNextPit(14 - 2 * (this.getIndex() % 7));
+        return this.getNextPit(12 - 2 * (this.getIndex() % 7));
     }
 
     public int getContents() {
@@ -186,7 +185,5 @@ public class Pit {
         this.contents = newContents;
     }
 
-    public int getIndex() {
-        return this.index;
-    }
+    public int getIndex() {return this.index;}
 }

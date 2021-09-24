@@ -2,6 +2,9 @@ package mancala.domain;
 
 public class Kalaha extends Pit {
 
+    public Pit nextPit;
+    public int contents;
+
     public Kalaha(int contents, int index, Pit firstPit, Player player) {
         super(contents, index, firstPit, player);
         if (index == 7) {
@@ -14,19 +17,8 @@ public class Kalaha extends Pit {
     }
 
     @Override
-    public void addContent(int contentToPlay) {
-        if (this.owner.isMyTurn()) {
-            contentToPlay = contentToPlay - 1;
-            this.contents = this.contents + 1;
-        }
-        if (contentToPlay > 0) {
-            nextPit.addContent(contentToPlay);
-        }
-    }
-
-    @Override
-    public void addStolenContent(int contentToSteal, Player player) {
-        if (player == this.owner) {
+    public void addStolenContent(int contentToSteal) {
+        if (this.owner.isTurn) {
             super.setContents(getContents() + contentToSteal);
         }
     }
